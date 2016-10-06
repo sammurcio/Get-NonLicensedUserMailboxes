@@ -1,7 +1,7 @@
 ﻿
-
 $i = 0
 $out = @()
+$csv = $env:USERPROFILE + "\Desktop\NonLicensed_MailboxUser_Report.csv"
 
 $activity = "Processing Request..."
 $status = "Getting All Mailboxes" 
@@ -23,19 +23,20 @@ foreach ( $a in $userMbxs ) {
     if ( $msolUser.Licenses.ServiceStatus.ServicePlan.ServiceName -like "Exchange*" ) {
       $result = "User is licensed for Exchange Online"
     } else {
-      $result = "User is licensed, however not for for Exchange Online"
+      $result = "User is not licensed for Exchange Online"
     }
 
   }
 
-  $obj = [pscustomobject]@{
-    Username = $a.UserPrincipalName
-    DisplayName = $a.DisplayName
-    Result = $result
-   }
-      
-   $out += $obj
+  if ( $result -match "User is not licensed" ) {
+    $obj = [pscustomobject]@{
+      Username = $a.UserPrincipalName
+      DisplayName = $a.DisplayName
+      Result = $result
+    }
+    $out += $obj
+  }
 
 }
 
-$out | Export-Csv -NoTypeInformation "$env:USERPROFILE\Desktop\Mailboxes_NonLicensed_User_Report.csv"
+$out | Export-Csv -NoTypeInformation $csv
